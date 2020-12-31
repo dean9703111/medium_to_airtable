@@ -1,0 +1,17 @@
+{
+  "name": "medium-to-airtable",
+  "version": "1.0.0",
+  "description": "可以用這個套件將 medium 的文章透過爬蟲的方式整理到 airtable",
+  "author": "dean lin",
+  "license": "MIT",
+  "dependencies": {
+    "dateformat": "^3.0.3",
+    "dotenv": "^8.2.0",
+    "to-boolean": "^1.0.0",
+    "selenium-webdriver": "^4.0.0-alpha.7"
+  },
+  "scripts": {
+    "start": "node main.js"
+  },
+  "main": "main.js"
+}
