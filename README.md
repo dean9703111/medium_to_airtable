@@ -1,0 +1,2 @@
+# medium_to_airtable
+可以用這個套件將medium的文章透過爬蟲的方式整理到airtable
