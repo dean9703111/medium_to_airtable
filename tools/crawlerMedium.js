@@ -1,7 +1,11 @@
 
 exports.crawlerMedium = crawlerMedium;//讓其他程式在引入時可以使用這個函式
 const { By, until } = require('selenium-webdriver') // 從套件中取出需要用到的功能
+
 async function crawlerMedium (driver) {
+    let arraySubject = []//記錄大主題
+    let arrayTag = []//紀錄每個Tags
+    let arrayTotalStory = []//每個story詳細內容
     // 先取得上面標題的名稱及連結
     const arrayNavItemLink = await getNavItemLink(driver)
     // 依序前往每個title
@@ -13,17 +17,24 @@ async function crawlerMedium (driver) {
 
         let arrayStory = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postArticle--short")]/div/a`)
         if (arrayStory === false) {
-            arrayStory = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postItem")]/a`)
+            arrayStory = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postItem")]/a`)            
         }
         console.log("Title: " + arrayNavItemLink[i].title_text + " 的文章數：" + arrayStory.length)
+        arraySubject.push(arrayNavItemLink[i].title_text)
         for (var j = 0; j < arrayStory.length; j++) {
             await goStory(driver, arrayStory[j].link)
             let storyTag = await getStoryTag(driver)
+            storyTag.forEach(tag => {
+                if (!arrayTag.includes(tag)) {
+                    arrayTag.push(tag)
+                }
+            })
             arrayStory[j].tag = storyTag
             console.log(arrayStory[j].title + " | Time:" + arrayStory[j].publishTime + " | Tag:" + arrayStory[j].tag.toString() + " | Link:" + arrayStory[j].link)
         }
-
+        arrayTotalStory = arrayTotalStory.concat(arrayStory)
     }
+    return { "arraySubject": arraySubject, "arrayTag": arrayTag, "arrayStory": arrayTotalStory }
 }
 async function getStoryTag (driver) {
     try {
@@ -58,7 +69,7 @@ async function goStory (driver, storyLink) {
         return false
     }
 }
-async function getStoryTitleAndLink (driver, title_text, xpath) {
+async function getStoryTitleAndLink (driver, subject, xpath) {
     try {
         // console.log("抓取story 的 title & link")
         let find_all_stroy = false
@@ -106,6 +117,7 @@ async function getStoryTitleAndLink (driver, title_text, xpath) {
                     preStoryLinkHref = storyLinkHref
                     arrayStory.push({
                         title: storyLinkText,
+                        subject: subject,
                         link: storyLinkHref,
                         publishTime: publishTime
                     })
@@ -120,7 +132,7 @@ async function getStoryTitleAndLink (driver, title_text, xpath) {
         return arrayStory
     } catch (e) {
         console.error('找不到 Title & Link，改用另一個方法')
-        console.error(e)
+        // console.error(e)
         return false
     }
 }
@@ -160,3 +172,4 @@ async function getNavItemLink (driver) {
         return false
     }
 }
+

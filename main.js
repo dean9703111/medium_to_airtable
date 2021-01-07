@@ -1,10 +1,11 @@
 // 會在這個檔案中印出使用者目前的設定資訊，然後再依序執行
 require('dotenv').config();
 const { initDrive } = require("./tools/initDrive.js");
+const { createSubjects, createTags, createStorys } = require("./tools/airtable.js");
 const { crawlerMedium } = require("./tools/crawlerMedium.js");
 var toBoolean = require('to-boolean');
 
-crawler ()
+crawler()
 async function crawler () {
     console.log("目標 medium page：" + process.env.MEDIUM_PAGE)
     console.log("是否顯示瀏覽器：" + toBoolean(process.env.SHOW_BROWSER))
@@ -15,13 +16,17 @@ async function crawler () {
     }
     //爬 Medium 文章
     // const { "result_array": medium_result_array } = await crawlerMedium(driver)
-    await crawlerMedium(driver)
-    // driver.quit();
+    let { arraySubject, arrayTag, arrayStory } = await crawlerMedium(driver)
+    let subjectsRecords = await createSubjects(arraySubject)
+    let tagRecords = await createTags(arrayTag)
+    await createStorys(subjectsRecords, tagRecords, arrayStory)
+    driver.quit();
     //處理 AirTable 相關動作
+
     // await updateAirTable(medium_result_array)
     const end_time = new Date();
     const spend_time = spendTime(start_time, end_time)
-    console.log(spend_time)
+    console.log("完成時間：" + spend_time)
 }
 
 function spendTime (start_time, end_time) {

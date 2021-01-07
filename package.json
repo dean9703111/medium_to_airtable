@@ -5,10 +5,11 @@
   "author": "dean lin",
   "license": "MIT",
   "dependencies": {
+    "airtable": "^0.10.1",
     "dateformat": "^3.0.3",
     "dotenv": "^8.2.0",
-    "to-boolean": "^1.0.0",
-    "selenium-webdriver": "^4.0.0-alpha.7"
+    "selenium-webdriver": "^4.0.0-alpha.7",
+    "to-boolean": "^1.0.0"
   },
   "scripts": {
     "start": "node main.js"
