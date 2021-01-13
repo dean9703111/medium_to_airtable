@@ -1,7 +1,7 @@
 // 會在這個檔案中印出使用者目前的設定資訊，然後再依序執行
 require('dotenv').config();
 const { initDrive } = require("./tools/initDrive.js");
-const { createSubjects, createTags, createStorys } = require("./tools/airtable.js");
+const { createSubjects, createTags, createStorys, readTable, deleteStorys } = require("./tools/airtable.js");
 const { crawlerMedium } = require("./tools/crawlerMedium.js");
 var toBoolean = require('to-boolean');
 
@@ -14,16 +14,30 @@ async function crawler () {
     if (!driver) {//driver不存在就結束程式
         return
     }
-    //爬 Medium 文章
-    // const { "result_array": medium_result_array } = await crawlerMedium(driver)
-    let { arraySubject, arrayTag, arrayStory } = await crawlerMedium(driver)
+
+    // 先抓出線上的文章資訊
+    console.log("抓取 airtable 儲存的 Medium文章...")
+    const originStorys = await readTable('Medium文章', '文章標題')
+    console.log("抓取 airtable 儲存的 主分類...")
+    const originSubjects = await readTable('主分類', 'Name')
+    console.log("抓取 airtable 儲存的 Medium_tag...")
+    const originTags = await readTable('Medium_tag', 'Name')
+    console.log("完成 airtable 資料抓取")
+    // 爬 Medium 文章
+    let { arraySubject, arrayTag, arrayStory, arrayDeleteStorys } = await crawlerMedium(driver, originStorys, originSubjects, originTags)
+
+    driver.quit();
+
+    //處理 AirTable 相關動作
     let subjectsRecords = await createSubjects(arraySubject)
     let tagRecords = await createTags(arrayTag)
+    // 這裡要組成完成的Subject、Tag給Story取用
+    subjectsRecords = subjectsRecords.concat(originSubjects)
+    tagRecords = tagRecords.concat(originTags)
+    // console.log(subjectsRecords)
+    // console.log(tagRecords)
     await createStorys(subjectsRecords, tagRecords, arrayStory)
-    driver.quit();
-    //處理 AirTable 相關動作
-
-    // await updateAirTable(medium_result_array)
+    await deleteStorys(arrayDeleteStorys)
     const end_time = new Date();
     const spend_time = spendTime(start_time, end_time)
     console.log("完成時間：" + spend_time)

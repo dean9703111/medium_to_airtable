@@ -2,7 +2,7 @@
 exports.crawlerMedium = crawlerMedium;//讓其他程式在引入時可以使用這個函式
 const { By, until } = require('selenium-webdriver') // 從套件中取出需要用到的功能
 
-async function crawlerMedium (driver) {
+async function crawlerMedium (driver, originStorys, originSubjects, originTags) {
     let arraySubject = []//記錄大主題
     let arrayTag = []//紀錄每個Tags
     let arrayTotalStory = []//每個story詳細內容
@@ -15,26 +15,46 @@ async function crawlerMedium (driver) {
         await goTitlePage(driver, arrayNavItemLink[i].title_href)
         //去搜集該title下的所有連結
 
-        let arrayStory = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postArticle--short")]/div/a`)
-        if (arrayStory === false) {
-            arrayStory = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postItem")]/a`)            
+        let arrayStorymethod1 = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postArticle--short")]/div/a`, "可拍手列表")
+        let arrayStorymethod2 = await getStoryTitleAndLink(driver, arrayNavItemLink[i].title_text, `//*[contains(@class,"postItem")]/a`, "原本的版型")
+        //因為發現有些頁面是混合頁面，所以兩種都要嘗試
+        let arrayStory = arrayStorymethod1.concat(arrayStorymethod2)
+        let filterStorys = []
+        for (story of arrayStory) {
+            // 如果該文章原本不存在才需要加入
+            let existStory = originStorys.find(originStory => originStory.Name === story.title)
+            if (!existStory) {
+                filterStorys.push(story)
+            } else {//如果有找到文章就刪除增加之後搜尋效率，並且用於刪除已經變更的文章
+                let index = originStorys.findIndex(function (originStory) {
+                    return originStory.Name === story.title
+                })
+                originStorys.splice(index, 1);
+            }
         }
-        console.log("Title: " + arrayNavItemLink[i].title_text + " 的文章數：" + arrayStory.length)
-        arraySubject.push(arrayNavItemLink[i].title_text)
-        for (var j = 0; j < arrayStory.length; j++) {
-            await goStory(driver, arrayStory[j].link)
+        console.log("Title: " + arrayNavItemLink[i].title_text + " 的文章數：" + filterStorys.length)
+
+
+        // 如果該主題原本不存在才需要加入
+        if (!originSubjects.find(subject => subject.Name === arrayNavItemLink[i].title_text)) {
+            arraySubject.push(arrayNavItemLink[i].title_text)
+        }
+
+        for (var j = 0; j < filterStorys.length; j++) {
+            await goStory(driver, filterStorys[j].link)
             let storyTag = await getStoryTag(driver)
             storyTag.forEach(tag => {
-                if (!arrayTag.includes(tag)) {
+                // 如果該tag不存在原本的tag，並且也不是重複的tag就會新增
+                if (!originTags.find(originTag => originTag.Name === tag) && !arrayTag.includes(tag)) {
                     arrayTag.push(tag)
                 }
             })
-            arrayStory[j].tag = storyTag
-            console.log(arrayStory[j].title + " | Time:" + arrayStory[j].publishTime + " | Tag:" + arrayStory[j].tag.toString() + " | Link:" + arrayStory[j].link)
+            filterStorys[j].tag = storyTag
+            console.log(filterStorys[j].title + " | Time:" + filterStorys[j].publishTime + " | Tag:" + filterStorys[j].tag.toString() + " | Link:" + filterStorys[j].link)
         }
-        arrayTotalStory = arrayTotalStory.concat(arrayStory)
+        arrayTotalStory = arrayTotalStory.concat(filterStorys)
     }
-    return { "arraySubject": arraySubject, "arrayTag": arrayTag, "arrayStory": arrayTotalStory }
+    return { "arraySubject": arraySubject, "arrayTag": arrayTag, "arrayStory": arrayTotalStory, "deleteStorys": originStorys }
 }
 async function getStoryTag (driver) {
     try {
@@ -69,7 +89,7 @@ async function goStory (driver, storyLink) {
         return false
     }
 }
-async function getStoryTitleAndLink (driver, subject, xpath) {
+async function getStoryTitleAndLink (driver, subject, xpath, type) {
     try {
         // console.log("抓取story 的 title & link")
         let find_all_stroy = false
@@ -131,9 +151,9 @@ async function getStoryTitleAndLink (driver, subject, xpath) {
         }
         return arrayStory
     } catch (e) {
-        console.error('找不到 Title & Link，改用另一個方法')
+        console.error(type+' 無文章')
         // console.error(e)
-        return false
+        return []
     }
 }
 async function goTitlePage (driver, title_href) {

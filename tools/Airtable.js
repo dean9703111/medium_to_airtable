@@ -3,6 +3,54 @@ var base = new Airtable({ apiKey: 'keye3x4Q46SfapiiF' }).base('appJmEaVvuHt0tCaU
 exports.createSubjects = createSubjects;
 exports.createTags = createTags;
 exports.createStorys = createStorys;
+exports.readTable = readTable;
+exports.deleteStorys = deleteStorys;
+async function deleteStorys (arrayStory) {
+    var arrStoryId = []
+    try {
+        arrStoryId = JSON.parse(arrayStory).reduce((acc, val) => [...acc, val.record_id], [])
+    } catch (e) {
+        console.log("Invalid json")
+    }
+    if (arrStoryId.length > 0) {
+        try {
+            base('Medium文章').destroy(arrStoryId, function (err, deletedRecords) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                console.log('刪除不存在的文章：', deletedRecords.length, '筆');
+            });
+        } catch (e) {
+            console.error(e)
+        }
+    }
+}
+async function readTable (table, column) {
+    return new Promise((resolve, reject) => {
+        let results = []
+        base(table).select({
+            maxRecords: 1000,
+            pageSize: 100,//因為一次最多抓100筆
+            view: "Grid view",
+            fields: [column, "record_id"]
+        }).eachPage(async function page (records, fetchNextPage) {
+            for (const record of records) {
+                results.push({
+                    Name: await record.get(column),
+                    record_id: await record.get("record_id")
+                })
+            }
+            fetchNextPage();
+        }, function done (err) {
+            if (err) {
+                console.error(err); reject();
+                return;
+            }
+            resolve(results)
+        });
+    })
+}
 async function createSubjects (arraySubject) {
     let results = []
     try {
@@ -35,7 +83,6 @@ async function createSubjects (arraySubject) {
         console.error(e)
     }
 }
-createTags([])
 async function createTags (arrayTag) {
     let results = []
     try {
@@ -70,7 +117,7 @@ async function createTags (arrayTag) {
 }
 async function createStorys (subjectsRecords, tagRecords, arrayStory) {
     try {
-        console.log(arrayStory)
+        // console.log(arrayStory)
         let fillFields = []
         for (var i = 0; i < arrayStory.length; i++) {
             let subjectId = subjectsRecords.find(subject => subject.Name === arrayStory[i].subject).record_id;
