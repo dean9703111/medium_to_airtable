@@ -1,5 +1,6 @@
 var Airtable = require('airtable');
-var base = new Airtable({ apiKey: 'keye3x4Q46SfapiiF' }).base('appJmEaVvuHt0tCaU');
+require('dotenv').config();
+var base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEYKEY }).base(process.env.AIRTABLE_BASE);
 exports.createSubjects = createSubjects;
 exports.createTags = createTags;
 exports.createStorys = createStorys;
