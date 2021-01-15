@@ -144,7 +144,9 @@ async function createStorys (subjectsRecords, tagRecords, arrayStory) {
                 fillFields = []
             }
         }
-        await base('Medium文章').create(fillFields)
+        if (fillFields.length > 0) {
+            await base('Medium文章').create(fillFields)
+        }
 
     } catch (e) {
         console.error(e)
