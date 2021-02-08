@@ -22,7 +22,7 @@
 > 開發所需要的前置環境設定我寫在這篇文章：[工程師的開發環境大補帖：Node.js、NVM、git、yarn、VSCode](https://babydragon9703111.medium.com/%E5%B7%A5%E7%A8%8B%E5%B8%AB%E7%9A%84%E9%96%8B%E7%99%BC%E7%92%B0%E5%A2%83%E5%A4%A7%E8%A3%9C%E5%B8%96-node-js-nvm-git-yarn-vscode-3f21ea161898#e634)
 1. 從github下載
     ```
-    git clone git@github.com:dean9703111/medium_to_airtable.git
+    git clone https://github.com/dean9703111/medium_to_airtable.git
     ```
 2. 使用VSCode開啟資料夾，並點擊TERMINAL進入資料夾終端機
     ![image](./img/vscode.png)
