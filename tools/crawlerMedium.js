@@ -50,11 +50,96 @@ async function crawlerMedium (driver, originStorys, originSubjects, originTags) 
                 }
             })
             filterStorys[j].tag = storyTag
-            console.log(filterStorys[j].title + " | Time:" + filterStorys[j].publishTime + " | Tag:" + filterStorys[j].tag.toString() + " | Link:" + filterStorys[j].link)
+
+            let storyWords = await countStoryWords(driver)
+            filterStorys[j].words = storyWords
+
+            console.log(filterStorys[j].title + " | Words:" + filterStorys[j].words + " | Time:" + filterStorys[j].publishTime + " | Tag:" + filterStorys[j].tag.toString() + " | Link:" + filterStorys[j].link)
         }
         arrayTotalStory = arrayTotalStory.concat(filterStorys)
     }
     return { "arraySubject": arraySubject, "arrayTag": arrayTag, "arrayStory": arrayTotalStory, "deleteStorys": originStorys }
+}
+async function countStoryWords (driver) {
+    try {
+        let wordsCount = 0
+        let article_tag_p = await driver.findElements(By.xpath(`//article//p`));
+        let article_tag_h1 = await driver.findElements(By.xpath(`//article//h1`));
+        let article_tag_h2 = await driver.findElements(By.xpath(`//article//h2`));
+        let article_tag_span = await driver.findElements(By.xpath(`//article//span`));
+        let article_tag_figcaption = await driver.findElements(By.xpath(`//article//figcaption`));
+        let article_tag_li = await driver.findElements(By.xpath(`//article//li`));
+
+        for (var k = 0; k < article_tag_p.length; k++) {
+            let article_text = await article_tag_p[k].getText()
+            // console.log(article_text)
+            // console.log(countWords(article_text))
+            wordsCount = wordsCount + countWords(article_text)
+        }
+        for (var k = 0; k < article_tag_h1.length; k++) {
+            let article_text = await article_tag_h1[k].getText()
+            // console.log(article_text)
+            // console.log(countWords(article_text))
+            wordsCount = wordsCount + countWords(article_text)
+        }
+        for (var k = 0; k < article_tag_h2.length; k++) {
+            let article_text = await article_tag_h2[k].getText()
+            // console.log(article_text)
+            // console.log(countWords(article_text))
+            wordsCount = wordsCount + countWords(article_text)
+        }
+        for (var k = 0; k < article_tag_span.length; k++) {
+            // 要先過濾掉最上方作者資訊
+            let parant_tag = await article_tag_span[k].findElement(By.xpath(`./..`)).getTagName();
+            if (parant_tag != "div" && parant_tag != "span") {
+                let article_text = await article_tag_span[k].getText()
+                // console.log(article_text)
+                // console.log(countWords(article_text))
+                wordsCount = wordsCount + countWords(article_text)
+            }
+        }
+        for (var k = 0; k < article_tag_figcaption.length; k++) {
+            let article_text = await article_tag_figcaption[k].getText()
+            // console.log(article_text)
+            // console.log(countWords(article_text))
+            wordsCount = wordsCount + countWords(article_text)
+        }
+        for (var k = 0; k < article_tag_li.length; k++) {
+            let article_text = await article_tag_li[k].getText()
+            // console.log(article_text)
+            // console.log(countWords(article_text))
+            wordsCount = wordsCount + countWords(article_text)
+        }
+        return wordsCount
+    } catch (e) {
+        console.error('計算 Story words 失敗')
+        console.error(e)
+        return 0
+    }
+}
+function countWords (str) {    
+    // 先將特殊字元用空白取代掉
+    str = str.replace(/[\u007F-\u00FE]/g, ' ');
+
+    // 複製兩個，一個用來算中文字數，一個計算英文字數
+    let str1 = str;
+    let str2 = str;
+
+    // 移除中文，單純計算英文
+    str1 = str1.replace(/[^!-~\d\s]+/gi, ' ')
+
+    // 移除英文單純計算中文
+    str2 = str2.replace(/[!-~\d\s]+/gi, '')
+
+    let matches1 = str1.match(/[\u00ff-\uffff]|\S+/g);
+    let matches2 = str2.match(/[\u00ff-\uffff]|\S+/g);
+
+    count1 = matches1 ? matches1.length : 0;
+    count2 = matches2 ? matches2.length : 0;
+
+    /// 回傳總和
+    const total = (count1 + count2);
+    return total
 }
 async function getStoryTag (driver) {
     try {
@@ -151,7 +236,7 @@ async function getStoryTitleAndLink (driver, subject, xpath, type) {
         }
         return arrayStory
     } catch (e) {
-        console.error(type+' 無文章')
+        console.error(type + ' 無文章')
         // console.error(e)
         return []
     }

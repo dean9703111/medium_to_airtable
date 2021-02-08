@@ -129,6 +129,7 @@ async function createStorys (subjectsRecords, tagRecords, arrayStory) {
             })
             // console.log(subjectId)
             // console.log(arrayMediumTagId.toString())
+            // console.log(arrayStory[i].words)
             fillFields.push({
                 "fields": {
                     "文章標題": arrayStory[i].title,
@@ -136,6 +137,7 @@ async function createStorys (subjectsRecords, tagRecords, arrayStory) {
                     "主分類": [subjectId],
                     "Medium 🏷️": arrayMediumTagId,
                     "Medium": arrayStory[i].link,
+                    "字數統計": arrayStory[i].words,
                 }
             })
             // console.log(fillFields)
