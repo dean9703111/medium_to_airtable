@@ -13,7 +13,7 @@
   },
   "scripts": {
     "start": "node main.js",
-    "build": "pkg main.js -t node12-macos-x64 --config package.jsons"
+    "build": "pkg main.js -t node12-macos-x64 -c package.json"
   },
   "main": "main.js",
   "pkg": {
