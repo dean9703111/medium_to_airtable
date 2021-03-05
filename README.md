@@ -54,6 +54,17 @@
 ![image](./img/airtable_result.png)
 
 
+## 四、補充說明
+因為有朋友表示用這個程式還需要在自己電腦建立環境實在是太過麻煩，所以我把他打包成執行檔(僅限macOS操作)，你可以clone這個專案或是直接下載`app/medium-to-airtable`  
+下載後開啟資料的Terminal在底下輸入：
+```
+MEDIUM_PAGE="https://medium.com/你的網頁" SHOW_BROWSER=false AIRTABLE_API_KEYKEY='你申請的api' AIRTABLE_BASE='airtable的id' ./medium-to-airtable
+```
+就可以在沒有node的環境下執行嚕～  
+![image](./img/app_excute.png)
+
+
+
 >如果想要更深入了解這個Side Project的發想以及實作可以參考下面的文章喔:  
 >[透過爬蟲讓 Airtable 管理你的 Medium 文章(上) — 遇到需求時的分析以及執行步驟](https://medium.com/dean-lin/%E9%80%8F%E9%81%8E%E7%88%AC%E8%9F%B2%E8%AE%93-airtable-%E7%AE%A1%E7%90%86%E4%BD%A0%E7%9A%84-medium-%E6%96%87%E7%AB%A0-%E4%B8%8A-%E9%81%87%E5%88%B0%E9%9C%80%E6%B1%82%E6%99%82%E7%9A%84%E5%88%86%E6%9E%90%E4%BB%A5%E5%8F%8A%E5%9F%B7%E8%A1%8C%E6%AD%A5%E9%A9%9F-69c29b1cea43)
 
