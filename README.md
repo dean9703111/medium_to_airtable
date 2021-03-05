@@ -39,6 +39,7 @@
     - SHOW_BROSWER：設定為true時會有瀏覽器跳出來，設定為false時則是讓爬蟲背景執行
     - AIRTABLE_API_KEYKEY：在上面步驟申請到的API key
     - AIRTABLE_BASE：你目標要儲存BASE的代碼
+    - WAIT_PAGE_SECOND：預設2000為2秒的意思，因為有些網路環境比較差會造成部分頁面load不完全，可自行調整為1000~5000
     ![image](./img/vscode_env.png)
 5. 執行程式
     ```

@@ -1,8 +1,9 @@
 
 exports.crawlerMedium = crawlerMedium;//讓其他程式在引入時可以使用這個函式
+require('dotenv').config();
 const { By, until } = require('selenium-webdriver') // 從套件中取出需要用到的功能
 
-async function crawlerMedium (driver, originStorys, originSubjects, originTags) {
+async function crawlerMedium(driver, originStorys, originSubjects, originTags) {
     let arraySubject = []//記錄大主題
     let arrayTag = []//紀錄每個Tags
     let arrayTotalStory = []//每個story詳細內容
@@ -60,7 +61,7 @@ async function crawlerMedium (driver, originStorys, originSubjects, originTags) 
     }
     return { "arraySubject": arraySubject, "arrayTag": arrayTag, "arrayStory": arrayTotalStory, "deleteStorys": originStorys }
 }
-async function countStoryWords (driver) {
+async function countStoryWords(driver) {
     try {
         let wordsCount = 0
         let article_tag_p = await driver.findElements(By.xpath(`//article//p`));
@@ -117,7 +118,7 @@ async function countStoryWords (driver) {
         return 0
     }
 }
-function countWords (str) {    
+function countWords(str) {
     // 先將特殊字元用空白取代掉
     str = str.replace(/[\u007F-\u00FE]/g, ' ');
 
@@ -141,7 +142,7 @@ function countWords (str) {
     const total = (count1 + count2);
     return total
 }
-async function getStoryTag (driver) {
+async function getStoryTag(driver) {
     try {
         // console.log("抓取 story 的 tag")
         //暫停1秒來load
@@ -163,7 +164,7 @@ async function getStoryTag (driver) {
         return false
     }
 }
-async function goStory (driver, storyLink) {
+async function goStory(driver, storyLink) {
     //前往story頁面
     try {
         await driver.get(storyLink)
@@ -174,16 +175,17 @@ async function goStory (driver, storyLink) {
         return false
     }
 }
-async function getStoryTitleAndLink (driver, subject, xpath, type) {
+async function getStoryTitleAndLink(driver, subject, xpath, type) {
     try {
         // console.log("抓取story 的 title & link")
         let find_all_stroy = false
+        let double_check_loaded = false //因為有些網速比較慢，會造成 load 頁面的不完整
         let arrayStory = []
         //先歸零
         let preStoryLinkLength = 0
-        while (!find_all_stroy) {
+        while (!find_all_stroy && !double_check_loaded) {
             //暫停2秒來load
-            await driver.sleep(2000);
+            await driver.sleep(process.env.WAIT_PAGE_SECOND || 2000);
             let storyLinks = await driver.wait(until.elementLocated(By.xpath(xpath)), 5 * 1000).then(() => {
                 return driver.findElements(By.xpath(xpath))
             });
@@ -227,8 +229,13 @@ async function getStoryTitleAndLink (driver, subject, xpath, type) {
                         publishTime: publishTime
                     })
                 }
-                find_all_stroy = true
+                if (double_check_loaded) {//第二次也確認後就可離開
+                    find_all_stroy = true
+                }
+                // 可以開啟第二次確認
+                double_check_loaded = true
             } else {
+                double_check_loaded = false
                 preStoryLinkLength = storyLinks.length
             }
             //執行下滑
@@ -241,7 +248,7 @@ async function getStoryTitleAndLink (driver, subject, xpath, type) {
         return []
     }
 }
-async function goTitlePage (driver, title_href) {
+async function goTitlePage(driver, title_href) {
     //前往title頁面
     try {
         await driver.get(title_href)
@@ -252,7 +259,7 @@ async function goTitlePage (driver, title_href) {
         return false
     }
 }
-async function getNavItemLink (driver) {
+async function getNavItemLink(driver) {
     const medium_page = process.env.MEDIUM_PAGE
     try {
         let arrayNavItemLink = []
